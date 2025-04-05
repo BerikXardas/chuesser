@@ -1,5 +1,5 @@
 # chuesser
-chuesser is a simple implementation chess puzzle game Black Box Chess.
+chuesser is a simple implementation of the chess puzzle game Black Box Chess.
 
 ## Attention! This implementation requires the CodeDraw library
 https://github.com/Krassnig/CodeDraw
