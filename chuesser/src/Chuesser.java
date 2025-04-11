@@ -182,7 +182,7 @@ public class Chuesser {
     // generates the placement the player has to guess
     // the placements array simulates a hashtable, with the piece identifyer as the key and a pair of coordinates as the value
     // order of the Piece enum must be adhered!
-    public static int[][] generatePlacement(int[][] board, boolean[][] hints){
+    private static int[][] generatePlacement(int[][] board, boolean[][] hints){
         Random random = new Random();
 
         int[][] placements = new int[6][2];
@@ -293,7 +293,7 @@ public class Chuesser {
 
     // executes the changes in the game data / board which should be triggered by the mouse click
     // returns true if the game should continue running, false otherwise
-    public static boolean handleMouseClick(int mouseX, int mouseY, int boardSize, int squareSize, int offset, int[][] board, boolean[][] hints, int[][] attempt, int[][] placements){
+    private static boolean handleMouseClick(int mouseX, int mouseY, int boardSize, int squareSize, int offset, int[][] board, boolean[][] hints, int[][] attempt, int[][] placements){
         // clicked board
         if (mouseX > offset && mouseX < boardSize + offset && mouseY > offset && mouseY < boardSize + offset) {
             int file = (int) (((double) (mouseX - offset) / squareSize));
