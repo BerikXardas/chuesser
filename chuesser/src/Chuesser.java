@@ -8,6 +8,7 @@ import java.util.Random;
 public class Chuesser {
 
     private static int score = 100; // We start with 100 - each hint deducts 2, each wrong guess deducts 5
+    private static String info = "Good Luck!";
     private static Piece selectedPiece = Piece.NONE; // The currently selected piece
 
     // this enum improves human readability, as it is error-prone to rely on numbers only
@@ -67,6 +68,7 @@ public class Chuesser {
             for (var event : game.getEventScanner()) {
                 switch (event) {
                     case MouseClickEvent click -> {
+                        info = "";
                         int mouseX = click.getX();
                         int mouseY = click.getY();
                         gameRunning = handleMouseClick(mouseX, mouseY, boardSize, squareSize, offset, board, hints, attempt, placements);
@@ -75,12 +77,14 @@ public class Chuesser {
                     case KeyPressEvent keystroke -> {
                         Key key = keystroke.getKey();
                         if (key.equals(Key.ESCAPE)){
+                            info = "You surrendered.";
                             gameRunning = false;
                         }
                         else if (key.equals(Key.ENTER)){
                             if (isAttemptComplete(attempt)){
                                 gameRunning = !submitAttempt(attempt, placements);
                             }
+                            drawGame(game, boardSize, squareSize, offset, board, hints, attempt, placements, images);
                         }
                     }
                     default -> { }
@@ -88,8 +92,11 @@ public class Chuesser {
             }
         }
         if (score <= 0){
-            System.out.println("GAME OVER");
+            info = "GAME OVER\nBetter luck next time!";
         }
+        drawGame(game, boardSize, squareSize, offset, board, hints, attempt, placements, images);
+        game.show(3000);
+        System.out.println(info);
         game.close();
     }
 
@@ -164,16 +171,19 @@ public class Chuesser {
             }
         }
 
-        // footer / buttons
-        game.setColor(Color.green);
+        // buttons
+        game.setColor(Color.blue);
         game.fillRectangle(offset,boardSize + 2*offset, 2*squareSize, squareSize);
         game.setColor(Color.black);
-        game.drawText(offset,boardSize + 0.5*squareSize + 2*offset, "Submit");
+        game.drawText(2*offset,boardSize + 0.5*squareSize + 2*offset, "Submit");
 
         game.setColor(Color.red);
         game.fillRectangle(offset,boardSize + squareSize + 3*offset, 2*squareSize, squareSize);
         game.setColor(Color.black);
-        game.drawText(offset,boardSize + 1.5*squareSize + 3*offset, "Exit");
+        game.drawText(2*offset,boardSize + 1.5*squareSize + 3*offset, "Exit");
+
+        // info
+        game.drawText(4*offset + 2*squareSize,boardSize + 0.5*squareSize + 2*offset, info);
 
         game.show();
     }
@@ -332,7 +342,7 @@ public class Chuesser {
             }
         }
 
-        // clicked footer (buttons, WIP)
+        // clicked footer buttons
         else if (mouseX > offset && mouseX < 2*squareSize + offset){
             selectedPiece = Piece.NONE;
             if(mouseY > boardSize + 2*offset && mouseY < boardSize + squareSize + 2*offset){
@@ -341,6 +351,7 @@ public class Chuesser {
                 }
             }
             else if (mouseY > boardSize + squareSize + 3*offset && mouseY < boardSize + 2*squareSize + 3*offset){
+                info = "You surrendered.";
                 return false;
             }
         }
@@ -376,7 +387,7 @@ public class Chuesser {
     private static boolean isAttemptComplete(int[][] attempt) {
         for (int i = 1; i < attempt.length; i++) {
             if (Arrays.equals(attempt[i], new int[]{-1, -1})) {
-                System.out.println("Please place all pieces before submitting");
+                info = "Please place all pieces before submitting.";
                 return false;
             }
         }
@@ -393,11 +404,10 @@ public class Chuesser {
         }
         if (!winning){
             score -= 5;
-            System.out.println("Nice try, but wrong: 5 Points deducted");
+            info = "Nice try, but wrong!\n5 Points deducted.";
         }
         else{
-            System.out.println("Congratulations!");
-            System.out.println("Your Score: " + score);
+            info = "Congratulations!\nYour Score: " + score;
         }
         return winning;
     }
