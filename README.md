@@ -29,3 +29,9 @@ The pieces have the same move patterns as in standard chess, with the addition t
 Each hint comes with a cost of 2 points.
 
 You win if you find the correct placement before your score drops below 1.
+
+## Legal Notice
+This project uses icons created by Cburnett and Francois-Pier which are licensed under the GNU General Public License (GPL).
+The Icons were altered by changing the contures from black to grey.
+https://commons.wikimedia.org/wiki/User:Cburnett
+https://commons.wikimedia.org/wiki/User:Francois-Pier
