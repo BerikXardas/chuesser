@@ -95,6 +95,8 @@ public class BlackBoxChess {
             }
         }
         if (score <= 0) {
+            score = 0;
+            game.setTitle("Black Box Chess - Game Over");
             info = "GAME OVER\nBetter luck next time!";
         }
         if (game.isClosed()) {
