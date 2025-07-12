@@ -351,18 +351,22 @@ public class BlackBoxChess {
             }
         }
 
-        // clicked footer buttons
-        else if (mouseX > boardSize + 2 * offset && mouseX < boardSize + 2 * squareSize + 2 * offset) {
+        // clicked submit
+        else if (mouseY > boardSize + 2 * offset && mouseY < boardSize + squareSize + 2 * offset) {
             selectedPiece = Piece.NONE;
-            if (mouseY > boardSize + 2 * offset && mouseY < boardSize + squareSize + 2 * offset) {
-                if (isAttemptComplete(attempt)) {
-                    return !submitAttempt(attempt, placements);
-                }
-            } else if (mouseY > boardSize + squareSize + 3 * offset && mouseY < boardSize + 2 * squareSize + 3 * offset) {
-                info = "You surrendered.";
-                return false;
+            if (isAttemptComplete(attempt)) {
+                return !submitAttempt(attempt, placements);
             }
-        } else {
+        }
+
+        // clicked give up
+        else if (mouseY > boardSize + squareSize + 3 * offset && mouseY < boardSize + 2 * squareSize + 3 * offset) {
+            selectedPiece = Piece.NONE;
+            info = "You surrendered.";
+            return false;
+        }
+
+        else {
             selectedPiece = Piece.NONE;
         }
 
