@@ -7,11 +7,12 @@ import java.util.Random;
 
 public class BlackBoxChess {
 
-    // the size of everything is calculated in relation to the canvas size
-    private static final int canvasSize = 800;
-    private static final int squareSize = canvasSize * 3 / 32;
+    // the size of everything is calculated in relation to the canvas height
+    private static final int canvasHeight = 800;
+    private static final int squareSize = canvasHeight * 3 / 31;
     private static final int boardSize = squareSize * 8;
-    private static final int offset = canvasSize / 100;
+    private static final int offset = canvasHeight / 100;
+    private static final int canvasWidth = canvasHeight - offset;
 
     private static int score = 100; // We start with 100 points - each hint deducts 3, each wrong guess 7 points
     private static String info = "Good Luck!";
@@ -28,17 +29,17 @@ public class BlackBoxChess {
         KING
     }
 
-    static final Image place = CodeDraw.fromFile("src/place.png");
-    static final Image knight = CodeDraw.fromFile("src/knight.png");
-    static final Image bishop = CodeDraw.fromFile("src/bishop.png");
-    static final Image rook = CodeDraw.fromFile("src/rook.png");
-    static final Image queen = CodeDraw.fromFile("src/queen.png");
-    static final Image king = CodeDraw.fromFile("src/king.png");
-    static final Image[] images = {place, knight, bishop, rook, queen, king}; // must adhere to the order of the Piece enum!
+    private static final Image place = CodeDraw.fromFile("src/place.png");
+    private static final Image knight = CodeDraw.fromFile("src/knight.png");
+    private static final Image bishop = CodeDraw.fromFile("src/bishop.png");
+    private static final Image rook = CodeDraw.fromFile("src/rook.png");
+    private static final Image queen = CodeDraw.fromFile("src/queen.png");
+    private static final Image king = CodeDraw.fromFile("src/king.png");
+    private static final Image[] images = {place, knight, bishop, rook, queen, king}; // must adhere to the order of the Piece enum!
 
 
     public static void main(String[] args) {
-        CodeDraw game = new CodeDraw(canvasSize, canvasSize);
+        CodeDraw game = new CodeDraw(canvasWidth, canvasHeight);
 
         for (int i = 0; i < images.length; i++) {
             double scaleX = (double) squareSize / images[i].getWidth();
@@ -129,18 +130,18 @@ public class BlackBoxChess {
             game.drawLine(currentPos, offset, currentPos, boardSize + offset);
             game.drawLine(offset, currentPos, boardSize + offset, currentPos);
         }
-        for (int i = 0; i < 8; i++) {
-            for (int j = 0; j < 8; j++) {
-                if ((i + j) % 2 == 0) {
+        for (int rank = 0; rank < 8; rank++) {
+            for (int file = 0; file < 8; file++) {
+                if ((rank + file) % 2 == 0) {
                     game.setColor(Color.white);
                 } else {
                     game.setColor(Color.black);
                 }
-                game.fillSquare(i * squareSize + offset, j * squareSize + offset, squareSize);
+                game.fillSquare(file * squareSize + offset, rank * squareSize + offset, squareSize);
 
-                if (hints[j][i] && board[j][i] != -1) {
+                if (hints[rank][file] && board[rank][file] != -1) {
                     game.setColor(Color.cyan);
-                    game.drawText(i * squareSize + offset + squareSize / 2., j * squareSize + offset + squareSize / 2., String.valueOf(board[j][i]));
+                    game.drawText(file * squareSize + offset + squareSize / 2., rank * squareSize + offset + squareSize / 2., String.valueOf(board[rank][file]));
                 }
             }
         }
@@ -305,7 +306,7 @@ public class BlackBoxChess {
     // does not increase if the coordinates belong to the placement/solution
     private static void reachPosition(int rank, int file, int[][] board) {
         if (file >= 0 && file <= 7 && rank >= 0 && rank <= 7 && !isPlacement(rank, file, board)) {
-            board[rank][file] = board[rank][file] + 1;
+            board[rank][file] += 1;
         }
     }
 
@@ -354,7 +355,8 @@ public class BlackBoxChess {
         }
 
         // clicked submit
-        else if (mouseY > boardSize + 2 * offset && mouseY < boardSize + squareSize + 2 * offset) {
+        else if (mouseX > boardSize + 2 * offset && mouseX < boardSize + 2 * offset + 2 * squareSize &&
+                mouseY > boardSize + 2 * offset && mouseY < boardSize + squareSize + 2 * offset) {
             selectedPiece = Piece.NONE;
             if (isAttemptComplete(attempt)) {
                 return !submitAttempt(attempt, placements);
@@ -362,7 +364,8 @@ public class BlackBoxChess {
         }
 
         // clicked give up
-        else if (mouseY > boardSize + squareSize + 3 * offset && mouseY < boardSize + 2 * squareSize + 3 * offset) {
+        else if (mouseX > boardSize + 2 * offset && mouseX < boardSize + 2 * offset + 2 * squareSize &&
+                mouseY > boardSize + squareSize + 3 * offset && mouseY < boardSize + 2 * squareSize + 3 * offset) {
             selectedPiece = Piece.NONE;
             info = "You surrendered.";
             return false;
