@@ -369,9 +369,7 @@ public class BlackBoxChess {
             selectedPiece = Piece.NONE;
             info = "You surrendered.";
             return false;
-        }
-
-        else {
+        } else {
             selectedPiece = Piece.NONE;
         }
 

@@ -6,10 +6,12 @@ import java.util.Arrays;
 import java.util.Random;
 
 public class Game {
-    private final CodeDraw screen;
+
+    private static final Image place = CodeDraw.fromFile("src/place.png");
+    private Image scaledPlace = CodeDraw.fromFile("src/place.png");
+    private CodeDraw canvas;
     private final TextFormat numbersFormat = new TextFormat();
     private final TextFormat textFormat = new TextFormat();
-    private Image place = CodeDraw.fromFile("src/place.png");
     private int canvasHeight = 800;
     private int canvasWidth = 792;
     private double squareSize = 77;
@@ -24,11 +26,12 @@ public class Game {
     private final boolean[][] hints;
     private final int[][] board;
     private int score = 100;
-    private String info = "Good Luck!";
+    private String info = "Adjust the window size by pressing +/UP/-/DOWN keys.\nGood Luck!";
     private ChessPiece selectedPiece;
     private boolean isRunning = true;
+
     public boolean isRunning() {
-        return isRunning && !screen.isClosed();
+        return isRunning && !canvas.isClosed();
     }
 
     //standard game
@@ -42,7 +45,7 @@ public class Game {
         this.pieces[2] = new ChessPiece("Rook");
         this.pieces[3] = new ChessPiece("Queen");
         this.pieces[4] = new ChessPiece("King");
-        this.screen = new CodeDraw(canvasWidth, canvasHeight);
+        this.canvas = new CodeDraw(canvasWidth, canvasHeight);
         this.hintCost = 3;
         this.wrongGuessCost = 7;
         this.scaleImages();
@@ -59,7 +62,6 @@ public class Game {
             this.pieces[i] = pieces[i].clone();
         }
         this.adjustMeasurements(canvasSize);
-        this.screen = new CodeDraw(canvasWidth, canvasHeight);
         this.score = score;
         this.hintCost = hintCost;
         this.wrongGuessCost = wrongGuessCost;
@@ -68,13 +70,14 @@ public class Game {
 
     private void adjustMeasurements(int canvasSize) {
         int squareBasis = Math.max(board.length, board[0].length);
-        this.squareSize = canvasSize * (squareBasis - 2.) / (squareBasis * squareBasis);
-        this.boardHeight = squareSize * board.length;
-        this.boardWidth = squareSize * board[0].length;
-        this.offset = Math.min(boardWidth, boardHeight) / 100.;
-        this.canvasWidth = (int) (boardWidth + 2 * squareSize + 3 * offset);
-        this.canvasHeight = (int) (boardHeight + 2 * squareSize + 4 * offset);
-        this.scaleImages();
+        squareSize = canvasSize * (squareBasis - 2.) / (squareBasis * squareBasis);
+        boardHeight = squareSize * board.length;
+        boardWidth = squareSize * board[0].length;
+        offset = Math.min(boardWidth, boardHeight) / 100.;
+        canvasWidth = (int) (boardWidth + 2 * squareSize + 3 * offset);
+        canvasHeight = (int) (boardHeight + 2 * squareSize + 4 * offset);
+        canvas = new CodeDraw(canvasWidth, canvasHeight);
+        scaleImages();
     }
 
     private void scaleImages() {
@@ -85,14 +88,14 @@ public class Game {
         double scaleX = squareSize / place.getWidth();
         double scaleY = squareSize / place.getHeight();
         double scale = Math.min(scaleX, scaleY);
-        place = Image.scale(place, scale);
+        scaledPlace = Image.scale(place, scale);
         for (ChessPiece piece : pieces) {
             piece.scaleImage((int) squareSize);
         }
     }
 
-    public EventScanner getEventScanner(){
-        return this.screen.getEventScanner();
+    public EventScanner getEventScanner() {
+        return this.canvas.getEventScanner();
     }
 
     private void generateSolution() {
@@ -100,11 +103,11 @@ public class Game {
             solution[i] = pieces[i].clone();
         }
         Random random = new Random();
-        for (ChessPiece piece: solution) {
+        for (ChessPiece piece : solution) {
             int rank = random.nextInt(board.length);
             int file = random.nextInt(board[rank].length);
 
-            while (board[rank][file] == -1){
+            while (board[rank][file] == -1) {
                 rank = random.nextInt(board.length);
                 file = random.nextInt(board[rank].length);
             }
@@ -116,109 +119,109 @@ public class Game {
             piece.simulateMovements(board);
         }
     }
-    public void drawGame() {
-        screen.clear(Color.white);
 
-        screen.setTitle("Black Box Chess - Score: " + score);
+    public void drawGame() {
+        canvas.clear(Color.white);
+
+        canvas.setTitle("Black Box Chess - Score: " + score);
 
         // draw board
-        screen.setColor(Color.black);
+        canvas.setColor(Color.black);
 
         for (int i = 0; i <= board.length; i++) {
             double currentPos = i * squareSize + offset;
-            screen.drawLine(offset, currentPos, boardWidth + offset, currentPos);
+            canvas.drawLine(offset, currentPos, boardWidth + offset, currentPos);
         }
         for (int i = 0; i <= board[0].length; i++) {
             double currentPos = i * squareSize + offset;
-            screen.drawLine(currentPos, offset, currentPos, boardHeight + offset);
+            canvas.drawLine(currentPos, offset, currentPos, boardHeight + offset);
         }
 
-        screen.setTextFormat(numbersFormat);
+        canvas.setTextFormat(numbersFormat);
         for (int rank = 0; rank < board.length; rank++) {
             for (int file = 0; file < board[rank].length; file++) {
                 if ((rank + file) % 2 == 0) {
-                    screen.setColor(Color.white);
+                    canvas.setColor(Color.white);
                 } else {
-                    screen.setColor(Color.black);
+                    canvas.setColor(Color.black);
                 }
-                screen.fillSquare(file * squareSize + offset, rank * squareSize + offset, squareSize);
+                canvas.fillSquare(file * squareSize + offset, rank * squareSize + offset, squareSize);
 
                 if (hints[rank][file] && board[rank][file] != -1) {
-                    screen.setColor(Color.cyan);
-                    screen.drawText(file * squareSize + offset + squareSize / 2., rank * squareSize + offset + squareSize / 2., String.valueOf(board[rank][file]));
+                    canvas.setColor(Color.cyan);
+                    canvas.drawText(file * squareSize + offset + squareSize / 2., rank * squareSize + offset + squareSize / 2., String.valueOf(board[rank][file]));
                 }
             }
         }
 
         // sidebar, pieces, placement markers
-        screen.setColor(Color.black);
-        screen.drawRectangle(boardWidth + 2 * offset, offset + squareSize, 2 * squareSize, (board.length - 1) * squareSize);
+        canvas.setColor(Color.black);
+        canvas.drawRectangle(boardWidth + 2 * offset, offset + squareSize, 2 * squareSize, (board.length - 1) * squareSize);
         for (int i = 0; i < solution.length; i++) {
             boolean placed = false;
             int[] coordinates = solution[i].getCoordinates();
             for (int j = 0; j < pieces.length; j++) {
-                if (Arrays.equals(pieces[j].getCoordinates(), coordinates)){
+                if (Arrays.equals(pieces[j].getCoordinates(), coordinates)) {
                     placed = true;
                     break;
                 }
             }
             if (!placed) {
-                screen.drawImage(coordinates[1] * squareSize + offset, coordinates[0] * squareSize + offset, place);
+                canvas.drawImage(coordinates[1] * squareSize + offset, coordinates[0] * squareSize + offset, scaledPlace);
             }
         }
         int[] notPlaced = {-1, -1};
         for (int i = 0; i < pieces.length; i++) {
             int[] coordinates = pieces[i].getCoordinates();
             if (Arrays.equals(coordinates, notPlaced)) {
-                screen.drawImage(boardWidth + 2 * offset, offset + (i + 1) * squareSize, pieces[i].getImage());
-            }
-            else{
-                screen.drawImage(coordinates[1] * squareSize + offset, coordinates[0] * squareSize + offset, pieces[i].getImage());
+                canvas.drawImage(boardWidth + 2 * offset, offset + (i + 1) * squareSize, pieces[i].getImage());
+            } else {
+                canvas.drawImage(coordinates[1] * squareSize + offset, coordinates[0] * squareSize + offset, pieces[i].getImage());
             }
         }
 
         // selection marker
         if (selectedPiece != null) {
-            screen.setColor(Color.red);
+            canvas.setColor(Color.red);
             int[] coordinates = selectedPiece.getCoordinates();
             if (Arrays.equals(coordinates, notPlaced)) {
                 int pieceIndex = 0;
                 for (int i = 0; i < pieces.length; i++) {
-                    if (pieces[i] == selectedPiece){
+                    if (pieces[i] == selectedPiece) {
                         pieceIndex = i;
                         break;
                     }
                 }
-                screen.drawSquare(boardWidth + 2 * offset, offset + (pieceIndex + 1) * squareSize, squareSize);
+                canvas.drawSquare(boardWidth + 2 * offset, offset + (pieceIndex + 1) * squareSize, squareSize);
             } else {
-                screen.drawSquare(coordinates[1] * squareSize + offset, coordinates[0] * squareSize + offset, squareSize);
+                canvas.drawSquare(coordinates[1] * squareSize + offset, coordinates[0] * squareSize + offset, squareSize);
             }
         }
 
         // display score
-        screen.setColor(Color.black);
-        screen.setTextFormat(textFormat);
-        screen.drawText(boardWidth + 2 * offset, offset + 0.5 * squareSize, "Score: " + score);
+        canvas.setColor(Color.black);
+        canvas.setTextFormat(textFormat);
+        canvas.drawText(boardWidth + 2 * offset, offset + 0.5 * squareSize, "Score: " + score);
 
         // buttons
-        screen.setColor(Color.YELLOW);
-        screen.fillRectangle(boardWidth + 2 * offset, boardHeight + 2 * offset, 2 * squareSize, squareSize);
-        screen.setColor(Color.black);
-        screen.drawText(boardWidth + 3 * offset, boardHeight + 0.5 * squareSize + 2 * offset, "Submit");
+        canvas.setColor(Color.YELLOW);
+        canvas.fillRectangle(boardWidth + 2 * offset, boardHeight + 2 * offset, 2 * squareSize, squareSize);
+        canvas.setColor(Color.black);
+        canvas.drawText(boardWidth + 3 * offset, boardHeight + 0.5 * squareSize + 2 * offset, "Submit");
 
-        screen.setColor(Color.red);
-        screen.fillRectangle(boardWidth + 2 * offset, boardHeight + squareSize + 3 * offset, 2 * squareSize, squareSize);
-        screen.setColor(Color.black);
-        screen.drawText(boardWidth + 3 * offset, boardHeight + 1.5 * squareSize + 3 * offset, "Give up");
+        canvas.setColor(Color.red);
+        canvas.fillRectangle(boardWidth + 2 * offset, boardHeight + squareSize + 3 * offset, 2 * squareSize, squareSize);
+        canvas.setColor(Color.black);
+        canvas.drawText(boardWidth + 3 * offset, boardHeight + 1.5 * squareSize + 3 * offset, "Give up");
 
         // info
-        screen.drawText(4 * offset, boardHeight + 0.5 * squareSize + 2 * offset, info);
+        canvas.drawText(4 * offset, boardHeight + 0.5 * squareSize + 2 * offset, info);
 
-        screen.show();
-        if (!isRunning){
-            screen.show(3000);
+        canvas.show();
+        if (!isRunning) {
+            canvas.show(3000);
             System.out.println(info);
-            screen.close();
+            canvas.close();
         }
     }
 
@@ -236,7 +239,7 @@ public class Game {
                         removePiece(placedPiece);
                     }
                     if (placedPiece != selectedPiece) {
-                       selectedPiece.setCoordinates(rank, file);
+                        selectedPiece.setCoordinates(rank, file);
                     }
                 }
                 selectedPiece = null;
@@ -254,7 +257,7 @@ public class Game {
                 score -= hintCost;
                 if (score <= 0) {
                     score = 0;
-                    screen.setTitle("Black Box Chess - Game Over");
+                    canvas.setTitle("Black Box Chess - Game Over");
                     info = "GAME OVER\nBetter luck next time!";
                     isRunning = false;
                 }
@@ -264,7 +267,7 @@ public class Game {
         // clicked sidebar (= unplaced pieces)
         else if (mouseX > boardWidth + 2 * offset && mouseX < boardWidth + squareSize + 2 * offset &&
                 mouseY > squareSize + offset && mouseY <= (pieces.length + 1) * squareSize + offset) {
-            int pieceIndex = (int) ((double) (mouseY - offset) / squareSize) - 1;
+            int pieceIndex = (int) ((mouseY - offset) / squareSize) - 1;
             if (pieceIndex >= 0 && pieceIndex < pieces.length) {
                 if (Arrays.equals(pieces[pieceIndex].getCoordinates(), new int[]{-1, -1})) {
                     selectedPiece = pieces[pieceIndex];
@@ -287,28 +290,49 @@ public class Game {
             selectedPiece = null;
             info = "You surrendered.";
             isRunning = false;
-        }
-
-        else {
+        } else {
             selectedPiece = null;
         }
 
     }
 
-    public void handleKeystroke(Key key){
-        if (key.equals(Key.ESCAPE)) {
-            info = "You surrendered.";
-            isRunning = false;
-        } else if (key.equals(Key.ENTER)) {
-            if (isAttemptComplete()) {
-                submitAttempt();
+    public void handleKeystroke(Key key) {
+        int canvasSizeChange = 0;
+        switch (key) {
+            case Key.ESCAPE -> {
+                info = "You surrendered.";
+                isRunning = false;
             }
+            case Key.ENTER -> {
+                if (isAttemptComplete()) {
+                    submitAttempt();
+                }
+            }
+            case Key.PLUS, Key.UP, Key.ADD -> {
+                canvasSizeChange = 100;
+                info = "Window enlarged";
+            }
+            case Key.MINUS, Key.DOWN, Key.SUBTRACT -> {
+                canvasSizeChange = -100;
+                info = "Window compacted";
+            }
+            default -> {
+            }
+        }
+        if (canvasSizeChange != 0) {
+            int newCanvasSize = Math.max(canvasWidth, canvasHeight) + canvasSizeChange;
+            int x = canvas.getWindowPositionX();
+            int y = canvas.getWindowPositionY();
+            canvas.close();
+            adjustMeasurements(newCanvasSize);
+            canvas.setWindowPositionX(x);
+            canvas.setWindowPositionY(y);
         }
     }
 
     private boolean isPlacement(int[] coordinates) {
-        for(ChessPiece piece : solution){
-            if(Arrays.equals(piece.getCoordinates(), coordinates)){
+        for (ChessPiece piece : solution) {
+            if (Arrays.equals(piece.getCoordinates(), coordinates)) {
                 return true;
             }
         }
@@ -317,8 +341,8 @@ public class Game {
 
     private boolean isAttemptComplete() {
         int[] notPlaced = {-1, -1};
-        for(ChessPiece piece : pieces){
-            if(Arrays.equals(piece.getCoordinates(), notPlaced)){
+        for (ChessPiece piece : pieces) {
+            if (Arrays.equals(piece.getCoordinates(), notPlaced)) {
                 info = "Please place all pieces before submitting.";
                 return false;
             }
@@ -344,12 +368,12 @@ public class Game {
         for (int i = 0; i < pieces.length; i++) {
             boolean found = false;
             for (int j = 0; j < solution.length; j++) {
-                if (pieces[i].equals(solution[j])){
+                if (pieces[i].equals(solution[j])) {
                     found = true;
                     break;
                 }
             }
-            if (!found){
+            if (!found) {
                 winning = false;
                 break;
             }
@@ -359,7 +383,7 @@ public class Game {
             info = "Nice try, but wrong!\n" + wrongGuessCost + " Points deducted.";
             if (score <= 0) {
                 score = 0;
-                screen.setTitle("Black Box Chess - Game Over");
+                canvas.setTitle("Black Box Chess - Game Over");
                 info = "GAME OVER\nBetter luck next time!";
                 isRunning = false;
             }

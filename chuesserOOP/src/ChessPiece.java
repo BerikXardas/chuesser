@@ -18,16 +18,21 @@ public class ChessPiece {
     private final int diagonalLine;
     private final int[][] specialMoves;
     private final int[] coordinates = {-1, -1};
+
     public int[] getCoordinates() {
         return coordinates;
     }
+
     public void setCoordinates(int rank, int file) {
-        this.coordinates[0] = rank;
-        this.coordinates[1] = file;
+        coordinates[0] = rank;
+        coordinates[1] = file;
     }
-    private Image image = new Image(64,64, Color.white);
+
+    private final Image image;
+    private Image scaledImage;
+
     public Image getImage() {
-        return image;
+        return scaledImage;
     }
 
     public ChessPiece(String name, int straightLine, int diagonalLine, int[][] specialMoves, Image image) {
@@ -36,44 +41,44 @@ public class ChessPiece {
         this.diagonalLine = diagonalLine;
         this.specialMoves = specialMoves;
         this.image = image;
+        this.scaledImage = image;
     }
 
-    public ChessPiece(String name) {
+    public ChessPiece(String name) throws IllegalArgumentException {
         this.name = name;
-        if (name.toLowerCase().startsWith("knight")){
+        String identifier = name.toLowerCase();
+        if (identifier.startsWith("knight")) {
             this.specialMoves = new int[][]{{-2, -1}, {-2, 1}, {-1, -2}, {-1, 2}, {1, -2}, {1, 2}, {2, -1}, {2, 1}};
             this.straightLine = 0;
             this.diagonalLine = 0;
             this.image = knight;
-        } else if (name.toLowerCase().startsWith("bishop")){
+        } else if (identifier.startsWith("bishop")) {
             this.specialMoves = new int[0][0];
             this.straightLine = 0;
             this.diagonalLine = Integer.MAX_VALUE;
             this.image = bishop;
-        } else if (name.toLowerCase().startsWith("rook")){
+        } else if (identifier.startsWith("rook")) {
             this.specialMoves = new int[0][0];
             this.straightLine = Integer.MAX_VALUE;
             this.diagonalLine = 0;
             this.image = rook;
-        } else if (name.toLowerCase().startsWith("queen")){
+        } else if (identifier.startsWith("queen")) {
             this.specialMoves = new int[0][0];
             this.straightLine = Integer.MAX_VALUE;
             this.diagonalLine = Integer.MAX_VALUE;
             this.image = queen;
-        } else if (name.toLowerCase().startsWith("king")){
+        } else if (identifier.startsWith("king")) {
             this.specialMoves = new int[0][0];
             this.straightLine = 1;
             this.diagonalLine = 1;
             this.image = king;
+        } else {
+            throw new IllegalArgumentException("This constructor requires the name to start with an actual chess piece's name");
         }
-        else{
-            this.specialMoves = new int[0][0];
-            this.straightLine = 0;
-            this.diagonalLine = 0;
-        }
+        this.scaledImage = image;
     }
 
-    public void simulateMovements(int[][] board){
+    public void simulateMovements(int[][] board) {
         int straight = Math.min(board.length, this.straightLine);
         int skewed = Math.min(board.length, this.diagonalLine);
         int rank = coordinates[0];
@@ -90,7 +95,7 @@ public class ChessPiece {
             reachPosition(rank - i, file + i, board);
             reachPosition(rank - i, file - i, board);
         }
-        for (int[] movement : this.specialMoves){
+        for (int[] movement : this.specialMoves) {
             reachPosition(rank + movement[0], file + movement[1], board);
         }
     }
@@ -100,6 +105,14 @@ public class ChessPiece {
             board[rank][file] += 1;
         }
     }
+
+    public void scaleImage(int squareSize) {
+        double scaleX = (double) squareSize / image.getWidth();
+        double scaleY = (double) squareSize / image.getHeight();
+        double scale = Math.min(scaleX, scaleY);
+        scaledImage = Image.scale(image, scale);
+    }
+
     protected ChessPiece clone() {
         return new ChessPiece(name, straightLine, diagonalLine, specialMoves, image);
     }
@@ -119,10 +132,4 @@ public class ChessPiece {
         return result;
     }
 
-    public void scaleImage(int squareSize) {
-        double scaleX = (double) squareSize / image.getWidth();
-        double scaleY = (double) squareSize / image.getHeight();
-        double scale = Math.min(scaleX, scaleY);
-        image = Image.scale(image, scale);
-    }
 }

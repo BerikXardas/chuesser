@@ -13,20 +13,21 @@ public class BlackBoxChessOOP {
         Image unicorn = CodeDraw.fromFile("src/knight2.png");
         ChessPiece[] pieces = new ChessPiece[7];
         pieces[0] = new ChessPiece("King1");
-        pieces[1] = new ChessPiece("Knight");
-        pieces[2] = new ChessPiece("Rook");
+        pieces[1] = new ChessPiece("KnightRider");
+        pieces[2] = new ChessPiece("ROOK");
         pieces[3] = new ChessPiece("King2");
-        pieces[4] = new ChessPiece("Unicorn", 0, 3, new int[][]{{-2, 0}, {0,-2}, {2,0}, {0,2}}, unicorn);
-        pieces[5] = new ChessPiece("Queen");
-        pieces[6] = new ChessPiece("Bishop");
-        Game game2 = new Game(747, pieces, 7, 9, 255, 2, 5);
+        pieces[4] = new ChessPiece("Unicorn", 0, 3, new int[][]{{-2, 0}, {0, -2}, {2, 0}, {0, 2}}, unicorn);
+        pieces[5] = new ChessPiece("QueenVictoria");
+        pieces[6] = new ChessPiece("BishopOfCologne");
+        Game game2 = new Game(700, pieces, 8, 10, 255, 2, 5);
 
         Game game = game2;
 
         game.drawGame();
-        EventScanner eventScanner = game.getEventScanner();
+        EventScanner eventScanner;
 
         while (game.isRunning()) {
+            eventScanner = game.getEventScanner();
             for (var event : eventScanner) {
                 switch (event) {
                     case MouseClickEvent click -> {
