@@ -18,7 +18,7 @@ There are 120 possible placements (permutations) in each game. In order to impro
 You win if you find the correct placement before your score drops below 1.
 
 ## OOP Extension
-There is a second project which implements the same game. This can be both used to customize game settings much easier, as well as a reference on how and why OOP techniques should be used. It features the most important OOP features in Java, like different constructors, getters, setters, hashCode, clone, identity vs equality, class variables vs object variables, public vs private access...
+There is a second project which implements the same game. This can be both used to customize game settings much easier, as well as a reference on how and why OOP techniques should be used. It features the man basic OOP features in Java, like (different) constructors, getters, setters, hashCode, identity vs equality, class variables vs object variables, public vs private access...
 
 ## Legal Notice
 This project uses icons created by Cburnett and Francois-Pier which are licensed under the GNU General Public License (GPL). The Icons were altered by changing the contures from black to grey.\

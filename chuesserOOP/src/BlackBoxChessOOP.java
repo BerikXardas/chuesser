@@ -19,7 +19,7 @@ public class BlackBoxChessOOP {
         pieces[4] = new ChessPiece("Unicorn", 0, 3, new int[][]{{-2, 0}, {0, -2}, {2, 0}, {0, 2}}, unicorn);
         pieces[5] = new ChessPiece("QueenVictoria");
         pieces[6] = new ChessPiece("BishopOfCologne");
-        Game game2 = new Game(700, pieces, 8, 10, 255, 2, 5);
+        Game game2 = new Game(700, pieces, 6, 9, 77, 2, 7);
 
         Game game = game2;
 

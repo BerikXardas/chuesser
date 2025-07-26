@@ -54,12 +54,17 @@ public class Game {
 
     //custom screen, pieces, board, starting score and costs
     public Game(int canvasSize, ChessPiece[] pieces, int ranks, int files, int score, int hintCost, int wrongGuessCost) {
+        ranks = Math.max(ranks, 5);
+        files = Math.max(files, 5);
+        ranks = Math.min(ranks, 20);
+        files = Math.min(files, 20);
         this.board = new int[ranks][files];
         this.hints = new boolean[ranks][files];
-        this.pieces = new ChessPiece[pieces.length];
-        this.solution = new ChessPiece[pieces.length];
-        for (int i = 0; i < pieces.length; i++) {
-            this.pieces[i] = pieces[i].clone();
+        int pieceCount = Math.min(2 * (ranks - 1), pieces.length);
+        this.pieces = new ChessPiece[pieceCount];
+        this.solution = new ChessPiece[pieceCount];
+        for (int i = 0; i < pieceCount; i++) {
+            this.pieces[i] = new ChessPiece(pieces[i]);
         }
         this.adjustMeasurements(canvasSize);
         this.score = score;
@@ -69,6 +74,7 @@ public class Game {
     }
 
     private void adjustMeasurements(int canvasSize) {
+        canvasSize = Math.max(canvasSize, 600);
         int squareBasis = Math.max(board.length, board[0].length);
         squareSize = canvasSize * (squareBasis - 2.) / (squareBasis * squareBasis);
         boardHeight = squareSize * board.length;
@@ -100,7 +106,7 @@ public class Game {
 
     private void generateSolution() {
         for (int i = 0; i < pieces.length; i++) {
-            solution[i] = pieces[i].clone();
+            solution[i] = new ChessPiece(pieces[i]);
         }
         Random random = new Random();
         for (ChessPiece piece : solution) {
@@ -174,7 +180,7 @@ public class Game {
         for (int i = 0; i < pieces.length; i++) {
             int[] coordinates = pieces[i].getCoordinates();
             if (Arrays.equals(coordinates, notPlaced)) {
-                canvas.drawImage(boardWidth + 2 * offset, offset + (i + 1) * squareSize, pieces[i].getImage());
+                canvas.drawImage((boardWidth + 2 * offset) + ((i / (board.length - 1) * squareSize)), offset + (i % (board.length - 1) + 1) * squareSize, pieces[i].getImage());
             } else {
                 canvas.drawImage(coordinates[1] * squareSize + offset, coordinates[0] * squareSize + offset, pieces[i].getImage());
             }
@@ -192,7 +198,7 @@ public class Game {
                         break;
                     }
                 }
-                canvas.drawSquare(boardWidth + 2 * offset, offset + (pieceIndex + 1) * squareSize, squareSize);
+                canvas.drawSquare(boardWidth + 2 * offset + (pieceIndex / (board.length - 1)) * squareSize, offset + (pieceIndex % (board.length - 1) + 1) * squareSize, squareSize);
             } else {
                 canvas.drawSquare(coordinates[1] * squareSize + offset, coordinates[0] * squareSize + offset, squareSize);
             }
@@ -265,13 +271,14 @@ public class Game {
         }
 
         // clicked sidebar (= unplaced pieces)
-        else if (mouseX > boardWidth + 2 * offset && mouseX < boardWidth + squareSize + 2 * offset &&
-                mouseY > squareSize + offset && mouseY <= (pieces.length + 1) * squareSize + offset) {
+        else if (mouseX > boardWidth + 2 * offset && mouseX < boardWidth + 2 * squareSize + 2 * offset &&
+                mouseY > squareSize + offset && mouseY <= squareSize + boardHeight + offset - squareSize) {
             int pieceIndex = (int) ((mouseY - offset) / squareSize) - 1;
-            if (pieceIndex >= 0 && pieceIndex < pieces.length) {
-                if (Arrays.equals(pieces[pieceIndex].getCoordinates(), new int[]{-1, -1})) {
+            pieceIndex += (int) ((mouseX - boardWidth - 2 * offset) / squareSize) * (board.length - 1);
+            if (pieceIndex >= 0 && pieceIndex < pieces.length && Arrays.equals(pieces[pieceIndex].getCoordinates(), new int[]{-1, -1})) {
                     selectedPiece = pieces[pieceIndex];
-                }
+            } else {
+                selectedPiece = null;
             }
         }
 
@@ -309,11 +316,11 @@ public class Game {
                 }
             }
             case Key.PLUS, Key.UP, Key.ADD -> {
-                canvasSizeChange = 100;
+                canvasSizeChange = (int) squareSize * 3;
                 info = "Window enlarged";
             }
             case Key.MINUS, Key.DOWN, Key.SUBTRACT -> {
-                canvasSizeChange = -100;
+                canvasSizeChange = (int) -squareSize * 3;
                 info = "Window compacted";
             }
             default -> {

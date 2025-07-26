@@ -44,6 +44,15 @@ public class ChessPiece {
         this.scaledImage = image;
     }
 
+    public ChessPiece(ChessPiece chessPiece) {
+        this.name = chessPiece.name;
+        this.straightLine = chessPiece.straightLine;
+        this.diagonalLine = chessPiece.diagonalLine;
+        this.specialMoves = chessPiece.specialMoves;
+        this.image = chessPiece.image;
+        //new ChessPiece(chessPiece.name, chessPiece.straightLine, chessPiece.diagonalLine, chessPiece.specialMoves, chessPiece.image);
+    }
+
     public ChessPiece(String name) throws IllegalArgumentException {
         this.name = name;
         String identifier = name.toLowerCase();
@@ -113,16 +122,15 @@ public class ChessPiece {
         scaledImage = Image.scale(image, scale);
     }
 
-    protected ChessPiece clone() {
-        return new ChessPiece(name, straightLine, diagonalLine, specialMoves, image);
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof ChessPiece that)) return false;
-        return straightLine == that.straightLine && diagonalLine == that.diagonalLine && Arrays.equals(coordinates, that.coordinates) &&
-                Arrays.deepEquals(specialMoves, that.specialMoves);
+        if (!(o instanceof ChessPiece)){
+            return false;
+        }
+        ChessPiece that = (ChessPiece) o;
+        return straightLine == that.straightLine && diagonalLine == that.diagonalLine &&
+                Arrays.deepEquals(specialMoves, that.specialMoves) && Arrays.equals(coordinates, that.coordinates);
     }
 
     @Override
